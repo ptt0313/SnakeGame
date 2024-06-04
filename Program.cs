@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace SnakeGame
+﻿namespace SnakeGame
 {
     public class Map
     {
@@ -21,7 +19,9 @@ namespace SnakeGame
             { 1,1,1,1,1,1,1,1,1,1,1,1 }
         };
         public void CreatMap()
-        { 
+        {
+            Character character;
+            character = new Character();
             for (int i = 0; i < map.GetLength(0); i++) 
             {
                 for(int j = 0; j < map.GetLength(1); j++)
@@ -34,7 +34,10 @@ namespace SnakeGame
                     {
                         Console.Write("  ");
                     }
-                    
+                    else if (map[character.Y,character.X/2] == 2)
+                    {
+                        Console.Write("○");
+                    }
                     else if (map[i,j] == 2)
                     {
                         Console.Write("○");
@@ -43,6 +46,7 @@ namespace SnakeGame
                     {
                         Console.Write("★");
                     }
+                    
                 }
                 Console.WriteLine();
             }
@@ -52,8 +56,8 @@ namespace SnakeGame
     }
     public class Character
     {
-        public int x = 6;
-        public int y = 4;
+        int x = 6;
+        int y = 4;
 
         public int X
         {
@@ -80,25 +84,29 @@ namespace SnakeGame
     }
     public class Tail
     {
-        
-        Character body = new Character();
-        Map map = new Map();
-        Queue<Character> tail = new Queue<Character> ();
-        
+        Character? character;
+        public Queue<Character> tail = new Queue<Character> ();
+        public void AddTail(int x, int y)
+        {
+            character = new Character();
+            character.X = x;
+            character.Y = y;
+            
+            tail.Enqueue(character);
 
-        public void AddTail()
-        {
-            tail.Enqueue (body);
         }
-        public void MoveTail()
+        public void RemoveTail()
         {
-                tail.Enqueue (body);
-                tail.Dequeue ();
+            if(tail.Count > 0)
+            {
+                tail.Dequeue();
+            }
         }
     }
 
     internal class Program
     {
+        
         static void Main(string[] args)
         {
             Random random = new Random();
@@ -106,7 +114,6 @@ namespace SnakeGame
             Character character = new Character();
             Tail tail = new Tail();
             ConsoleKeyInfo key;
-
             
             for (int n = 0; n < 100; n++)
             {
@@ -134,35 +141,28 @@ namespace SnakeGame
                     // 캐릭터의 좌표에 뱀머리 생성
                     Console.SetCursorPosition(character.X, character.Y);
                     Console.Write("●");
-
-                    if(Console.KeyAvailable)
-                    {
-
-                        // 키입력 반환
-                        key = Console.ReadKey();
+                    tail.AddTail(character.Y, character.X/2);
+                    tail.RemoveTail();
+                    // 키입력 반환
+                    key = Console.ReadKey();
                         switch (key.Key)
                         {
                             case ConsoleKey.UpArrow:
-                                tail.MoveTail();
                                 character.Y--;
                                 break;
                             case ConsoleKey.LeftArrow:
-                                tail.MoveTail();
                                 character.X -= 2;
                                 break;
                             case ConsoleKey.RightArrow:
-                                tail.MoveTail();
                                 character.X += 2;
                                 break;
                             case ConsoleKey.DownArrow:
-                                tail.MoveTail();
                                 character.Y++;
                                 break;
                         }
-                        }
 
-                    // 캐릭터가 벽과 부딫힐 경우 게임종료
-                    if (map.map[character.Y, character.X/2] == 1)
+                // 캐릭터가 벽과 부딫힐 경우 게임종료
+                if (map.map[character.Y, character.X/2] == 1)
                     {
                         Console.Clear();
                         Console.WriteLine("Defeat");
@@ -179,7 +179,8 @@ namespace SnakeGame
                     else if (map.map[character.Y,character.X/2] == 3)
                     {
                         map.map[character.Y, character.X / 2] = 0;
-                        tail.AddTail();
+                        tail.AddTail(character.Y,character.X/2);
+                        
                         break;
                     }
                     Console.Clear();
