@@ -18,15 +18,13 @@
             { 1,0,0,0,0,0,0,0,0,0,0,1 },
             { 1,1,1,1,1,1,1,1,1,1,1,1 }
         };
-        public void CreatMap()
+        public void CreateMap()
         {
-            Character character;
-            character = new Character();
-            for (int i = 0; i < map.GetLength(0); i++) 
+            for (int i = 0; i < map.GetLength(0); i++)
             {
-                for(int j = 0; j < map.GetLength(1); j++)
+                for (int j = 0; j < map.GetLength(1); j++)
                 {
-                    if(map[i, j] == 1)
+                    if (map[i, j] == 1)
                     {
                         Console.Write("■");
                     }
@@ -34,25 +32,20 @@
                     {
                         Console.Write("  ");
                     }
-                    else if (map[character.Y,character.X/2] == 2)
+                    else if (map[i, j] == 2)
                     {
                         Console.Write("○");
                     }
-                    else if (map[i,j] == 2)
-                    {
-                        Console.Write("○");
-                    }
-                    else if (map[i,j] == 3)
+                    else if (map[i, j] == 3)
                     {
                         Console.Write("★");
                     }
-                    
                 }
                 Console.WriteLine();
             }
         }
-        
-        
+
+
     }
     public class Character
     {
@@ -84,40 +77,44 @@
     }
     public class Tail
     {
-        Character? character;
-        public Queue<Character> tail = new Queue<Character> ();
+        private Queue<(int, int)> tail;
+        private Map map;
+
+        public Tail(Map map)
+        {
+            this.map = map;
+            tail = new Queue<(int, int)>();
+        }
+
         public void AddTail(int x, int y)
         {
-            character = new Character();
-            character.X = x;
-            character.Y = y;
-            
-            tail.Enqueue(character);
-
+            tail.Enqueue((x, y));
+            map.map[x, y] = 2;
         }
+
         public void RemoveTail()
         {
-            if(tail.Count > 0)
+            if (tail.Count > 0)
             {
-                tail.Dequeue();
+                var (x, y) = tail.Dequeue();
+                map.map[x, y] = 0;
             }
         }
     }
 
     internal class Program
     {
-        
         static void Main(string[] args)
         {
             Random random = new Random();
             Map map = new Map();
             Character character = new Character();
-            Tail tail = new Tail();
+            Tail tail = new Tail(map);
             ConsoleKeyInfo key;
-            
+
             for (int n = 0; n < 100; n++)
             {
-                //게임판에 꼬리가 화면을 전부 다채우면 승리
+                // 게임판에 꼬리가 화면을 전부 다 채우면 승리
                 if (n == 99)
                 {
                     Console.Clear();
@@ -127,60 +124,59 @@
                 Console.Clear();
 
                 // 랜덤한 좌표로 아이템 생성
-                int rx = random.Next(1,11);
-                int ry = random.Next(1,11);
+                int rx = random.Next(1, 11);
+                int ry = random.Next(1, 11);
 
-                if (map.map[rx, ry] == 0 && map.map[rx,ry] != 2)
+                if (map.map[rx, ry] == 0 && map.map[rx, ry] != 2)
                 {
                     map.map[rx, ry] = 3;
                 }
 
                 while (true)
                 {
-                    map.CreatMap();
+                    map.CreateMap();
                     // 캐릭터의 좌표에 뱀머리 생성
                     Console.SetCursorPosition(character.X, character.Y);
                     Console.Write("●");
-                    tail.AddTail(character.Y, character.X/2);
+                    tail.AddTail(character.Y, character.X / 2);
                     tail.RemoveTail();
                     // 키입력 반환
                     key = Console.ReadKey();
-                        switch (key.Key)
-                        {
-                            case ConsoleKey.UpArrow:
-                                character.Y--;
-                                break;
-                            case ConsoleKey.LeftArrow:
-                                character.X -= 2;
-                                break;
-                            case ConsoleKey.RightArrow:
-                                character.X += 2;
-                                break;
-                            case ConsoleKey.DownArrow:
-                                character.Y++;
-                                break;
-                        }
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.UpArrow:
+                            character.Y--;
+                            break;
+                        case ConsoleKey.LeftArrow:
+                            character.X -= 2;
+                            break;
+                        case ConsoleKey.RightArrow:
+                            character.X += 2;
+                            break;
+                        case ConsoleKey.DownArrow:
+                            character.Y++;
+                            break;
+                    }
 
-                // 캐릭터가 벽과 부딫힐 경우 게임종료
-                if (map.map[character.Y, character.X/2] == 1)
+                    // 캐릭터가 벽과 부딪힐 경우 게임종료
+                    if (map.map[character.Y, character.X / 2] == 1)
                     {
                         Console.Clear();
                         Console.WriteLine("Defeat");
                         Environment.Exit(0);
                     }
-                    // 캐릭터가 본인의 꼬리와 부딫힐 경우 게임종료
-                    else if ( map.map[character.Y, character.X/2] == 2)
+                    // 캐릭터가 본인의 꼬리와 부딪힐 경우 게임종료
+                    else if (map.map[character.Y, character.X / 2] == 2)
                     {
                         Console.Clear();
                         Console.WriteLine("Defeat");
                         Environment.Exit(0);
                     }
-                    // 캐릭터가 아이템을 먹을 시 해당 좌표값 0으로 설정, 꼬리추가
-                    else if (map.map[character.Y,character.X/2] == 3)
+                    // 캐릭터가 아이템을 먹을 시 해당 좌표값 0으로 설정, 꼬리 추가
+                    else if (map.map[character.Y, character.X / 2] == 3)
                     {
+                        tail.AddTail(character.Y, character.X / 2);
                         map.map[character.Y, character.X / 2] = 0;
-                        tail.AddTail(character.Y,character.X/2);
-                        
                         break;
                     }
                     Console.Clear();
