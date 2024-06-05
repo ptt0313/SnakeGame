@@ -49,8 +49,8 @@
     }
     public class Character
     {
-        int x = 6;
-        int y = 4;
+        int x = 10;
+        int y = 8;
 
         public int X
         {
@@ -79,7 +79,7 @@
     {
         private Queue<(int, int)> tail;
         private Map map;
-
+        
         public Tail(Map map)
         {
             this.map = map;
@@ -89,29 +89,46 @@
         public void AddTail(int x, int y)
         {
             tail.Enqueue((x, y));
-            map.map[x, y] = 2;
+            if (map.map[x,y] != 3)
+            {
+                map.map[x, y] = 2;
+            }
         }
 
         public void RemoveTail()
         {
             if (tail.Count > 0)
             {
-                var (x, y) = tail.Dequeue();
+                (int x,int y) = tail.Dequeue();
                 map.map[x, y] = 0;
             }
         }
     }
 
+    
+
     internal class Program
     {
+        
+
+        enum Direction
+        {
+            Up,
+            Left,
+            Right,
+            Down
+        }
+        
         static void Main(string[] args)
         {
-            Random random = new Random();
             Map map = new Map();
             Character character = new Character();
             Tail tail = new Tail(map);
             ConsoleKeyInfo key;
+            Direction direction = new Direction();
 
+            
+            
             for (int n = 0; n < 100; n++)
             {
                 // 게임판에 꼬리가 화면을 전부 다 채우면 승리
@@ -124,40 +141,70 @@
                 Console.Clear();
 
                 // 랜덤한 좌표로 아이템 생성
+                Random random = new Random();
                 int rx = random.Next(1, 11);
                 int ry = random.Next(1, 11);
 
-                if (map.map[rx, ry] == 0 && map.map[rx, ry] != 2)
+                
+                while(true)
                 {
-                    map.map[rx, ry] = 3;
+                    if (map.map[rx, ry] == 0 && map.map[rx, ry] != 2)
+                    {
+                        map.map[rx, ry] = 3;
+                        break;
+                    }
                 }
+
+
 
                 while (true)
                 {
                     map.CreateMap();
-                    // 캐릭터의 좌표에 뱀머리 생성
+                    // 캐릭터의 좌표에 뱀 생성
                     Console.SetCursorPosition(character.X, character.Y);
                     Console.Write("●");
+                    Thread.Sleep(100);
                     tail.AddTail(character.Y, character.X / 2);
                     tail.RemoveTail();
-                    // 키입력 반환
+
+
+                    if (Console.KeyAvailable)
+                    { 
                     key = Console.ReadKey();
-                    switch (key.Key)
+                        switch (key.Key)
+                        {
+                            case ConsoleKey.UpArrow:
+                                direction = Direction.Up;
+                                break;
+                            case ConsoleKey.LeftArrow:
+                                direction = Direction.Left;
+                                break;
+                            case ConsoleKey.RightArrow:
+                                direction = Direction.Right;
+                                break;
+                            case ConsoleKey.DownArrow:
+                                direction = Direction.Down;
+                                break;
+                        }
+                    }
+
+
+                    // 키입력 반환
+                    switch (direction)
                     {
-                        case ConsoleKey.UpArrow:
+                        case Direction.Up:
                             character.Y--;
                             break;
-                        case ConsoleKey.LeftArrow:
+                        case Direction.Left:
                             character.X -= 2;
                             break;
-                        case ConsoleKey.RightArrow:
+                        case Direction.Right:
                             character.X += 2;
                             break;
-                        case ConsoleKey.DownArrow:
+                        case Direction.Down:
                             character.Y++;
                             break;
                     }
-
                     // 캐릭터가 벽과 부딪힐 경우 게임종료
                     if (map.map[character.Y, character.X / 2] == 1)
                     {
@@ -179,6 +226,7 @@
                         map.map[character.Y, character.X / 2] = 0;
                         break;
                     }
+
                     Console.Clear();
                 }
             }
