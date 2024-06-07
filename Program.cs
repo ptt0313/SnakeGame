@@ -24,6 +24,7 @@
             {
                 for (int j = 0; j < map.GetLength(1); j++)
                 {
+                    
                     if (map[i, j] == 1)
                     {
                         Console.Write("■");
@@ -104,13 +105,9 @@
             }
         }
     }
-
-    
-
     internal class Program
     {
         
-
         enum Direction
         {
             Up,
@@ -121,53 +118,53 @@
         
         static void Main(string[] args)
         {
+            Console.SetWindowSize(30, 15);
+            Console.BackgroundColor = ConsoleColor.DarkGreen;
+            Console.ForegroundColor = ConsoleColor.White;
+            
             Map map = new Map();
             Character character = new Character();
             Tail tail = new Tail(map);
             ConsoleKeyInfo key;
             Direction direction = new Direction();
-
-            
-            
+            Random random = new Random();
             for (int n = 0; n < 100; n++)
             {
-                // 게임판에 꼬리가 화면을 전부 다 채우면 승리
                 if (n == 99)
                 {
                     Console.Clear();
                     Console.WriteLine("VICTORY");
                     Environment.Exit(0);
                 }
-                Console.Clear();
 
                 // 랜덤한 좌표로 아이템 생성
-                Random random = new Random();
-                int rx = random.Next(1, 11);
-                int ry = random.Next(1, 11);
-
                 
                 while(true)
                 {
+                    int rx = random.Next(1, 11);
+                    int ry = random.Next(1, 11);
                     if (map.map[rx, ry] == 0 && map.map[rx, ry] != 2)
                     {
                         map.map[rx, ry] = 3;
                         break;
                     }
                 }
-
-
-
+             
+                
+                //게임 반복 로직
                 while (true)
                 {
+                    Console.Clear();
+                    // 2차원 배열 맵 생성
                     map.CreateMap();
                     // 캐릭터의 좌표에 뱀 생성
                     Console.SetCursorPosition(character.X, character.Y);
                     Console.Write("●");
+                    // 게임 속도조절
                     Thread.Sleep(100);
+                    // 뱀 이동시 꼬리추가
                     tail.AddTail(character.Y, character.X / 2);
-                    tail.RemoveTail();
-
-
+                    // 키 입력값 변수선언
                     if (Console.KeyAvailable)
                     { 
                     key = Console.ReadKey();
@@ -187,9 +184,7 @@
                                 break;
                         }
                     }
-
-
-                    // 키입력 반환
+                    // 키입력 변수 반환
                     switch (direction)
                     {
                         case Direction.Up:
@@ -205,8 +200,15 @@
                             character.Y++;
                             break;
                     }
+
+                    // 캐릭터가 아이템을 먹을 시 해당 좌표값 0으로 설정, 꼬리 삭제 건너뛰기
+                    if (map.map[character.Y, character.X / 2] == 3)
+                    {
+                        map.map[character.Y, character.X / 2] = 0;
+                        break;
+                    }
                     // 캐릭터가 벽과 부딪힐 경우 게임종료
-                    if (map.map[character.Y, character.X / 2] == 1)
+                    else if (map.map[character.Y, character.X / 2] == 1)
                     {
                         Console.Clear();
                         Console.WriteLine("Defeat");
@@ -219,15 +221,8 @@
                         Console.WriteLine("Defeat");
                         Environment.Exit(0);
                     }
-                    // 캐릭터가 아이템을 먹을 시 해당 좌표값 0으로 설정, 꼬리 추가
-                    else if (map.map[character.Y, character.X / 2] == 3)
-                    {
-                        tail.AddTail(character.Y, character.X / 2);
-                        map.map[character.Y, character.X / 2] = 0;
-                        break;
-                    }
-
-                    Console.Clear();
+                    // 뱀 이동후 꼬리삭제
+                    tail.RemoveTail();
                 }
             }
         }
